@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "FoodShorts",
+    "slug": "foodshorts",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "fonts": [
+      "../../fonts/Everett-Light.ttf",
+      "../../fonts/Everett-Regular.ttf", 
+      "../../fonts/Everett-Medium.ttf",
+      "../../fonts/Everett-Bold.ttf",
+      "../../fonts/Aeonik-Regular.ttf",
+      "../../fonts/Aeonik-Bold.ttf"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.foodshorts.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.foodshorts.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite ao app acessar suas fotos para upload de conteúdo."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Permite ao app gravar vídeos com áudio."
+        }
+      ]
+    ],
+    "scheme": "foodshorts",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

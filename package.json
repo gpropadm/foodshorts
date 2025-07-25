@@ -1,0 +1,24 @@
+{
+  "name": "foodshorts",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "setup": "./scripts/setup.sh",
+    "dev:script": "./scripts/dev.sh",
+    "build:script": "./scripts/build.sh"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.3",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  phone             String?  @unique
+  firstName         String
+  lastName          String
+  avatar            String?
+  isActive          Boolean  @default(true)
+  walletCredit      Float    @default(0)
+  foodcoins         Int      @default(0)
+  foodcoinsExpiry   DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  orders            Order[]
+  reviews           Review[]
+  supportChats      SupportChat[]
+  auditLogs         AuditLog[] @relation("UserAuditLogs")
+
+  @@map("users")
+}
+
+model VendorProfile {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  businessName      String
+  description       String?
+  logo              String?
+  banner            String?
+  phone             String
+  address           String
+  latitude          Float
+  longitude         Float
+  isActive          Boolean  @default(true)
+  commissionRate    Float    @default(0.18)
+  rankingScore      Float    @default(0)
+  stars             Float    @default(0)
+  onTimeRate        Float    @default(0)
+  volumeScore       Float    @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  feedItems         FeedItem[]
+  orders            Order[]
+  subscription      VendorSubscription?
+  addonSubscriptions VendorAddonSubscription[]
+  supportChats      SupportChat[]
+
+  @@map("vendor_profiles")
+}
+
+model FeedItem {
+  id            String   @id @default(uuid())
+  vendorId      String
+  title         String
+  description   String?
+  price         Float
+  originalPrice Float?
+  mediaUrl      String
+  mediaType     String   // 'image' | 'video'
+  isActive      Boolean  @default(true)
+  views         Int      @default(0)
+  likes         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  orderItems    OrderItem[]
+
+  @@map("feed_items")
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  userId            String
+  vendorId          String
+  status            OrderStatus @default(PENDING)
+  total             Float
+  deliveryFee       Float       @default(0)
+  foodcoinsUsed     Int         @default(0)
+  walletCreditUsed  Float       @default(0)
+  paymentIntentId   String?
+  deliveryAddress   String
+  deliveryLatitude  Float
+  deliveryLongitude Float
+  estimatedTime     Int?        // minutes
+  deliveredAt       DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user              User          @relation(fields: [userId], references: [id])
+  vendor            VendorProfile @relation(fields: [vendorId], references: [id])
+  items             OrderItem[]
+  review            Review?
+  deliveryMetrics   DeliveryMetric?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  orderId    String
+  feedItemId String
+  quantity   Int
+  price      Float
+
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  feedItem   FeedItem @relation(fields: [feedItemId], references: [id])
+
+  @@map("order_items")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  userId    String
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User  @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+}
+
+model VendorSubscription {
+  id                String              @id @default(uuid())
+  vendorId          String              @unique
+  plan              SubscriptionPlan
+  stripeSubscriptionId String?
+  status            SubscriptionStatus  @default(ACTIVE)
+  currentPeriodEnd  DateTime
+  trialEnd          DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  vendor            VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_subscriptions")
+}
+
+model VendorAddonSubscription {
+  id                String              @id @default(uuid())
+  vendorId          String
+  addon             AddonType
+  stripeSubscriptionId String?
+  status            SubscriptionStatus  @default(ACTIVE)
+  currentPeriodEnd  DateTime
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  vendor            VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_addon_subscriptions")
+}
+
+model DeliveryMetric {
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  estimatedTime     Int      // minutes
+  actualTime        Int?     // minutes
+  isOnTime          Boolean?
+  distance          Float?   // km
+  createdAt         DateTime @default(now())
+
+  order             Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("delivery_metrics")
+}
+
+model SupportChat {
+  id        String      @id @default(uuid())
+  userId    String?
+  vendorId  String?
+  subject   String
+  status    ChatStatus  @default(OPEN)
+  priority  ChatPriority @default(MEDIUM)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user      User?         @relation(fields: [userId], references: [id])
+  vendor    VendorProfile? @relation(fields: [vendorId], references: [id])
+  messages  ChatMessage[]
+
+  @@map("support_chats")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  chatId    String
+  content   String
+  isFromUser Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  chat      SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  adminId     String?
+  action      String
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user        User? @relation("UserAuditLogs", fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  PAST_DUE
+}
+
+enum AddonType {
+  SOCIAL_BOOST
+}
+
+enum ChatStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ChatPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}

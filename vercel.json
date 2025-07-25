@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "projectSettings": {
+          "outputDirectory": "apps/web/.next"
+        }
+      }
+    },
+    {
+      "src": "apps/server/package.json", 
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["apps/server/prisma/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/admin/(.*)",
+      "dest": "apps/web/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "apps/server/src/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "apps/web/$1"
+    }
+  ]
+}
