@@ -69,6 +69,9 @@ export default function Dashboard() {
           <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '600', color: '#0f172a' }}>
             📦 Pedidos Recentes
           </h3>
+          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: '#10b981' }}>
+            ✅ Deploy Hook Funcionando! Auto-deploy ativo
+          </p>
         </div>
         
         <div style={{ overflowX: 'auto' }}>
